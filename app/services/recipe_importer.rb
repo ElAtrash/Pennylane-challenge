@@ -11,6 +11,7 @@ class RecipeImporter
     ActiveRecord::Base.transaction do
       parse_and_import
     end
+    refresh_ingredient_keywords
   rescue StandardError => e
     puts "\n Import failed: #{e.message}"
     raise
@@ -47,6 +48,11 @@ class RecipeImporter
       created_at: Time.current,
       updated_at: Time.current
     }
+  end
+
+  def refresh_ingredient_keywords
+    keywords = IngredientKeywordService.refresh_cache!
+    puts "\n Extracted #{keywords.size} unique keywords"
   end
 
   def normalize_ingredients(ingredients)

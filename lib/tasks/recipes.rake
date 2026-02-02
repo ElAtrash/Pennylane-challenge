@@ -18,4 +18,10 @@ namespace :recipes do
     Recipe.delete_all
     puts "All recipes deleted"
   end
+
+  desc "Extract ingredient keywords for autocomplete (also runs automatically after import)"
+  task extract_keywords: :environment do
+    keywords = IngredientKeywordService.refresh_cache!
+    puts "Extracted #{keywords.size} unique keywords"
+  end
 end
