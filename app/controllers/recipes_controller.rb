@@ -8,13 +8,15 @@ class RecipesController < ApplicationController
 
     render inertia: "Recipes/Index", props: {
       recipes: serialize_recipes(@recipes),
-      pagination: pagy_metadata
+      pagination: pagy_metadata,
+      search_ingredients: params[:ingredients] || []
     }
   end
 
   def show
     render inertia: "Recipes/Show", props: {
-      recipe: serialize_recipe(Recipe.find(params[:id]))
+      recipe: serialize_recipe(Recipe.find(params[:id])),
+      search_ingredients: params[:ingredients] || []
     }
   end
 

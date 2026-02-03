@@ -23,8 +23,10 @@ export interface Pagination {
 export interface RecipeIndexProps {
   recipes: Recipe[];
   pagination: Pagination;
+  search_ingredients?: string[];
 }
 
 export interface RecipeShowProps {
   recipe: Recipe;
+  search_ingredients?: string[];
 }

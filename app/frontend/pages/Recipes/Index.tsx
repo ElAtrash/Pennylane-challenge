@@ -3,9 +3,9 @@ import { useState } from 'react'
 import IngredientInput from '../../components/IngredientInput'
 import { RecipeIndexProps } from '../../types/recipe'
 
-export default function Index({ recipes, pagination }: RecipeIndexProps) {
+export default function Index({ recipes, pagination, search_ingredients = [] }: RecipeIndexProps) {
   const isSearchMode = recipes.some(r => r.matched_ingredients.length > 0)
-  const [ingredients, setIngredients] = useState<string[]>([])
+  const [ingredients, setIngredients] = useState<string[]>(search_ingredients)
 
   const handleSearch = () => {
     if (ingredients.length === 0) {
@@ -24,6 +24,12 @@ export default function Index({ recipes, pagination }: RecipeIndexProps) {
     const url = new URL(window.location.href)
     url.searchParams.set('page', String(page))
     router.get(url.pathname + url.search, {}, { preserveState: true })
+  }
+
+  const recipeUrl = (id: number) => {
+    if (ingredients.length === 0) return `/recipes/${id}`
+    const params = ingredients.map(i => `ingredients[]=${encodeURIComponent(i)}`).join('&')
+    return `/recipes/${id}?${params}`
   }
 
   return (
@@ -89,7 +95,7 @@ export default function Index({ recipes, pagination }: RecipeIndexProps) {
                 return (
                   <Link
                     key={recipe.id}
-                    href={`/recipes/${recipe.id}`}
+                    href={recipeUrl(recipe.id)}
                     className="block p-4 border rounded-xl hover:shadow-md transition-shadow bg-white"
                   >
                     <h3 className="font-semibold">{recipe.title}</h3>
