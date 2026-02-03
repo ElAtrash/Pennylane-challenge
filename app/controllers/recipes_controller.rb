@@ -41,7 +41,6 @@ class RecipesController < ApplicationController
     {
       id: recipe.id,
       title: recipe.title,
-      image: recipe.image,
       category: recipe.category,
       author: recipe.author,
       ratings: recipe.ratings&.to_f,

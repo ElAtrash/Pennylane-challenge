@@ -43,7 +43,6 @@ class RecipeImporter
       ratings: data["ratings"],
       category: data["category"],
       author: data["author"],
-      image: data["image"],
       ingredients: normalize_ingredients(data["ingredients"]),
       created_at: Time.current,
       updated_at: Time.current

@@ -11,8 +11,7 @@ RSpec.describe RecipeImporter do
         "ingredients": [ "1 cup milk", "1 egg   " ],
         "ratings": 4.74,
         "category": "Cornbread",
-        "author": "bluegirl",
-        "image": "http://example.com/image.jpg"
+        "author": "bluegirl"
       },
       {
         "title": "",
