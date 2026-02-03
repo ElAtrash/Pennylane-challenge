@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 
 class RecipesController < ApplicationController
+  include Pagy::Method
+
   def index
+    @pagy, @recipes = pagy(:offset, recipes, limit: 21)
+
     render inertia: "Recipes/Index", props: {
-      recipes: serialize_recipes(recipes)
+      recipes: serialize_recipes(@recipes),
+      pagination: pagy_metadata
     }
   end
 
@@ -20,7 +25,7 @@ class RecipesController < ApplicationController
   end
 
   def featured_recipes
-    Recipe.order(ratings: :desc, title: :asc).limit(20)
+    Recipe.order(ratings: :desc, title: :asc)
   end
 
   def search_service
@@ -45,6 +50,16 @@ class RecipesController < ApplicationController
       matched_ingredients: search_service.matched_ingredients(recipe),
       match_count: recipe.try(:match_count),
       ingredient_count: recipe.try(:ingredient_count)
+    }
+  end
+
+  def pagy_metadata
+    {
+      page: @pagy.page,
+      pages: @pagy.pages,
+      count: @pagy.count,
+      next: @pagy.next,
+      previous: @pagy.previous
     }
   end
 end

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import IngredientInput from '../../components/IngredientInput'
 import { RecipeIndexProps } from '../../types/recipe'
 
-export default function Index({ recipes }: RecipeIndexProps) {
+export default function Index({ recipes, pagination }: RecipeIndexProps) {
   const isSearchMode = recipes.some(r => r.matched_ingredients.length > 0)
   const [ingredients, setIngredients] = useState<string[]>([])
 
@@ -18,6 +18,12 @@ export default function Index({ recipes }: RecipeIndexProps) {
   const handleClearAndSearch = () => {
     setIngredients([])
     router.get('/', {}, { preserveState: true })
+  }
+
+  const goToPage = (page: number) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('page', String(page))
+    router.get(url.pathname + url.search, {}, { preserveState: true })
   }
 
   return (
@@ -58,10 +64,11 @@ export default function Index({ recipes }: RecipeIndexProps) {
         </div>
 
         <div className="pt-6">
-          <p className="text-gray-600 mb-4">
-            {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} found
-            {isSearchMode && <span> matching your ingredients</span>}
-          </p>
+          {isSearchMode && (
+            <p className="text-gray-600 mb-4">
+              {pagination.count} recipe{pagination.count !== 1 ? 's' : ''} found matching your ingredients
+            </p>
+          )}
 
           {recipes.length === 0 ? (
             <p className="text-gray-500 text-center py-8">
@@ -121,6 +128,28 @@ export default function Index({ recipes }: RecipeIndexProps) {
                   </Link>
                 )
               })}
+            </div>
+          )}
+
+          {pagination.pages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8">
+              <button
+                onClick={() => goToPage(pagination.previous!)}
+                disabled={!pagination.previous}
+                className="px-4 py-2 text-amber-600 hover:text-amber-700 disabled:text-gray-300 disabled:cursor-not-allowed"
+              >
+                ← Previous
+              </button>
+              <span className="text-gray-600">
+                Page {pagination.page} of {pagination.pages}
+              </span>
+              <button
+                onClick={() => goToPage(pagination.next!)}
+                disabled={!pagination.next}
+                className="px-4 py-2 text-amber-600 hover:text-amber-700 disabled:text-gray-300 disabled:cursor-not-allowed"
+              >
+                Next →
+              </button>
             </div>
           )}
         </div>

@@ -15,14 +15,13 @@ class RecipeSearchService
     keyword_groups.any?
   end
 
-  def search(limit: 50)
+  def search
     return Recipe.none if keyword_groups.empty?
 
     Recipe
       .where(ingredients_contain_keywords)
       .select(select_with_match_score)
       .order(order_by_relevance)
-      .limit(limit)
   end
 
   def matched_ingredients(recipe)

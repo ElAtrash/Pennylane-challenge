@@ -12,8 +12,17 @@ export interface Recipe {
   ingredient_count?: number;
 }
 
+export interface Pagination {
+  page: number;
+  pages: number;
+  count: number;
+  next: number | null;
+  previous: number | null;
+}
+
 export interface RecipeIndexProps {
   recipes: Recipe[];
+  pagination: Pagination;
 }
 
 export interface RecipeShowProps {
