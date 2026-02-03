@@ -52,7 +52,7 @@ RSpec.describe RecipeSearchService do
     end
 
     it "ranks recipes by match percentage" do
-      results = described_class.new("flour eggs milk").search
+      results = described_class.new([ "flour", "eggs", "milk" ]).search
       expect(results.first).to eq(pancakes)
       expect(results.first.match_score.round).to eq(100)
     end
@@ -63,7 +63,7 @@ RSpec.describe RecipeSearchService do
     end
 
     it "returns match_count and ingredient_count attributes" do
-      results = described_class.new("flour sugar").search
+      results = described_class.new([ "flour", "sugar" ]).search
       recipe = results.find { |r| r.id == sugar_and_flour.id }
 
       expect(recipe.match_count).to eq(2)
@@ -80,19 +80,117 @@ RSpec.describe RecipeSearchService do
       expect(results).to be_empty
     end
 
-    it "accepts string input with space separators" do
+    it "treats space-separated string as a single ingredient requiring all words in tsquery" do
       results = described_class.new("flour eggs").search
-      expect(results).to include(pancakes, cookies)
+      expect(results).not_to be_empty
+      expect(results.first.match_count).to eq(0)
     end
 
-    it "accepts string input with comma separators" do
-      results = described_class.new("flour,eggs").search
-      expect(results).to include(pancakes, cookies)
-    end
-
-    it "accepts array input" do
+    it "accepts array input for OR between ingredients" do
       results = described_class.new([ "flour", "eggs" ]).search
       expect(results).to include(pancakes, cookies)
+    end
+
+    it "requires all words in a phrase to match the same ingredient line" do
+      results = described_class.new("cups flour").search
+      expect(results).to include(pancakes, cookies)
+      expect(results).not_to include(simple_flour)
+    end
+
+    context "with multi-word ingredient phrases" do
+      let!(:whole_milk_recipe) do
+        Recipe.create!(
+          title: "Whole Milk Pancakes",
+          ingredients: [ "1 cup whole milk", "2 eggs", "flour" ],
+          ratings: 4.0
+        )
+      end
+
+      let!(:whole_wheat_recipe) do
+        Recipe.create!(
+          title: "Whole Wheat Bread",
+          ingredients: [ "whole wheat flour", "water", "yeast" ],
+          ratings: 4.2
+        )
+      end
+
+      it "matches 'whole milk' only to recipes with both words in same ingredient" do
+        results = described_class.new("whole milk").search
+        expect(results).to include(whole_milk_recipe)
+        expect(results).not_to include(whole_wheat_recipe)
+      end
+
+      it "normalizes hyphens in search query to spaces" do
+        results = described_class.new("whole-milk").search
+        expect(results).to include(whole_milk_recipe)
+        expect(results).not_to include(whole_wheat_recipe)
+      end
+
+      it "supports OR between phrase groups with array input" do
+        results = described_class.new([ "whole milk", "eggs" ]).search
+        expect(results).to include(whole_milk_recipe, pancakes, cookies)
+        expect(results).not_to include(whole_wheat_recipe)
+      end
+
+      it "calculates coverage_score based on phrase groups matched" do
+        results = described_class.new([ "whole milk", "eggs" ]).search
+        recipe = results.find { |r| r.id == whole_milk_recipe.id }
+        expect(recipe.coverage_score).to eq(100.0)
+      end
+    end
+  end
+
+  describe "#matched_ingredients" do
+    let!(:recipe) do
+      Recipe.create!(
+        title: "Test Recipe",
+        ingredients: [ "1 cup whole milk", "2 eggs", "1 cup flour" ],
+        ratings: 4.0
+      )
+    end
+
+    it "returns ingredients matching the search keywords" do
+      service = described_class.new("milk")
+      expect(service.matched_ingredients(recipe)).to eq([ "1 cup whole milk" ])
+    end
+
+    it "returns multiple matched ingredients" do
+      service = described_class.new(%w[milk eggs])
+      expect(service.matched_ingredients(recipe)).to contain_exactly("1 cup whole milk", "2 eggs")
+    end
+
+    it "returns empty array when no keywords" do
+      service = described_class.new("")
+      expect(service.matched_ingredients(recipe)).to eq([])
+    end
+
+    it "requires all words in phrase to match same ingredient" do
+      service = described_class.new("whole milk")
+      expect(service.matched_ingredients(recipe)).to eq([ "1 cup whole milk" ])
+    end
+
+    it "normalizes hyphens in search and matches correctly" do
+      service = described_class.new("whole-milk")
+      expect(service.matched_ingredients(recipe)).to eq([ "1 cup whole milk" ])
+    end
+
+    it "is case insensitive" do
+      service = described_class.new("MILK")
+      expect(service.matched_ingredients(recipe)).to eq([ "1 cup whole milk" ])
+    end
+  end
+
+  describe "#any_keywords?" do
+    it "returns true when keywords present" do
+      expect(described_class.new("flour").any_keywords?).to be true
+    end
+
+    it "returns false when input is empty" do
+      expect(described_class.new("").any_keywords?).to be false
+    end
+
+    it "returns false when input contains only filtered terms" do
+      expect(described_class.new([ "1", "a" ]).any_keywords?).to be false
     end
   end
 end

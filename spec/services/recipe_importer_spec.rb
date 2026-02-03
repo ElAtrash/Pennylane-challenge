@@ -58,6 +58,16 @@ RSpec.describe RecipeImporter do
       expect(recipe.ingredients).to eq([ "1 cup milk", "1 egg" ])
     end
 
+    it 'normalizes hyphens in ingredients to spaces' do
+      allow(File).to receive(:read).with(file_path).and_return([
+        { "title" => "Naan", "ingredients" => [ "1 cup whole-milk yogurt" ] }
+      ].to_json)
+
+      described_class.new(file_path).import!
+      recipe = Recipe.find_by(title: "Naan")
+      expect(recipe.ingredients).to eq([ "1 cup whole milk yogurt" ])
+    end
+
     it 'wraps the import in a transaction, rolling back on error' do
       allow(Recipe).to receive(:insert_all).and_raise(StandardError, "DB Error")
 

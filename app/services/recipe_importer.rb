@@ -57,6 +57,11 @@ class RecipeImporter
   def normalize_ingredients(ingredients)
     return [] unless ingredients.is_a?(Array)
 
-    ingredients.map { |ing| ing.strip.downcase }
+    ingredients.map do |ing|
+      ing.strip
+         .downcase
+         .gsub(/-/, " ")
+         .gsub(/\s+/, " ")
+    end
   end
 end
