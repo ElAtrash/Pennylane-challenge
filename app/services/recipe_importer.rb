@@ -43,7 +43,6 @@ class RecipeImporter
       ratings: data["ratings"],
       category: data["category"],
       author: data["author"],
-      image: data["image"],
       ingredients: normalize_ingredients(data["ingredients"]),
       created_at: Time.current,
       updated_at: Time.current
@@ -58,6 +57,11 @@ class RecipeImporter
   def normalize_ingredients(ingredients)
     return [] unless ingredients.is_a?(Array)
 
-    ingredients.map { |ing| ing.strip.downcase }
+    ingredients.map do |ing|
+      ing.strip
+         .downcase
+         .gsub(/-/, " ")
+         .gsub(/\s+/, " ")
+    end
   end
 end

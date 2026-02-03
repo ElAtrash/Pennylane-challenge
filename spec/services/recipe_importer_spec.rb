@@ -11,8 +11,7 @@ RSpec.describe RecipeImporter do
         "ingredients": [ "1 cup milk", "1 egg   " ],
         "ratings": 4.74,
         "category": "Cornbread",
-        "author": "bluegirl",
-        "image": "http://example.com/image.jpg"
+        "author": "bluegirl"
       },
       {
         "title": "",
@@ -57,6 +56,16 @@ RSpec.describe RecipeImporter do
       described_class.new(file_path).import!
       recipe = Recipe.find_by(title: "Golden Sweet Cornbread")
       expect(recipe.ingredients).to eq([ "1 cup milk", "1 egg" ])
+    end
+
+    it 'normalizes hyphens in ingredients to spaces' do
+      allow(File).to receive(:read).with(file_path).and_return([
+        { "title" => "Naan", "ingredients" => [ "1 cup whole-milk yogurt" ] }
+      ].to_json)
+
+      described_class.new(file_path).import!
+      recipe = Recipe.find_by(title: "Naan")
+      expect(recipe.ingredients).to eq([ "1 cup whole milk yogurt" ])
     end
 
     it 'wraps the import in a transaction, rolling back on error' do
