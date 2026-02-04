@@ -11,7 +11,7 @@ export default function Show({ recipe, search_ingredients = [] }: RecipeShowProp
 
   return (
     <>
-      <Head title={`${recipe.title} - Recipe Finder`} />
+      <Head title={`${recipe.title} - OmNom`} />
 
       <div className="bg-amber-50 min-h-screen">
         <div className="max-w-2xl mx-auto p-4">

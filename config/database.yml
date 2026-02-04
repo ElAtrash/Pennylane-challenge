@@ -90,15 +90,13 @@ production:
     database: el_atrash_production
     username: el_atrash
     password: <%= ENV["EL_ATRASH_DATABASE_PASSWORD"] %>
+    url: <%= ENV["DATABASE_URL"] %>
   cache:
     <<: *primary_production
-    database: el_atrash_production_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: el_atrash_production_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    database: el_atrash_production_cable
     migrations_paths: db/cable_migrate
