@@ -28,6 +28,14 @@ Rails 8 web application that helps users find recipes based on ingredients they 
 5. Featured recipes view when not searching
 6. Intuitive UX (autocomplete, clear all, input validation)
 
+## Product decisions
+
+- Skip broken images (not core problem)
+- Skip cuisine field (not populate in dataset and not core to ingredient matching)
+- No user accounts (not required for core functionality)
+- No recipe saving/favoriting (out of scope for core problem)
+- No advanced filters or recipe creation to keep focus on core feature
+
 ## User Stories
 
 ### 1. Search recipes by ingredients
@@ -61,3 +69,38 @@ Rails 8 web application that helps users find recipes based on ingredients they 
 - Full ingredient list with matched items highlighted
 - Prep time, cook time, and rating visible
 - Easy navigation back to search results with filters preserved
+
+## AI Tools Usage
+
+I used AI tools during this assignment for research/brainstorming, development assistance, and troubleshooting.
+
+### Tools Used
+
+- **Gemini** (web) - Research and comparison of approaches
+- **Claude Code** (CLI) - Development assistance and code review
+
+### Research & Design
+
+- Researched matching algorithms used in modern "what's in your fridge" style apps
+- Compared trade-offs: PostgreSQL full-text search vs. Elasticsearch vs. Meilisearch
+- Debating database design choices (PostgreSQL arrays vs normalized tables)
+
+### Development Assistance
+
+- **Regex** - Input parsing patterns for ingredient normalization
+- **Test coverage** - Suggestions for missing edge cases in RSpec tests
+- **Review** - Code reviews for readability and best practices
+- **Debugging** - Helped troubleshoot specific errors during development
+- **UI** - Sample code snippets for Tailwind CSS classes
+
+### DevOps
+
+- Troubleshot specific Fly.io deployment errors (build configuration)
+
+### Validation Process
+
+- All code was reviewed before accepting - modified or rejected suggestions that didn't fit the architecture
+- Refactored when initial solutions felt over engineered
+- Ran full test suite after changes
+- Used UI snippets as templates to build from
+- Made independent decisions on core architecture and UX

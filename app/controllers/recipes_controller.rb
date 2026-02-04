@@ -23,11 +23,7 @@ class RecipesController < ApplicationController
   private
 
   def recipes
-    search_service.any_keywords? ? search_service.search : featured_recipes
-  end
-
-  def featured_recipes
-    Recipe.order(ratings: :desc, title: :asc)
+    search_service.any_keywords? ? search_service.search : Recipe.featured
   end
 
   def search_service
