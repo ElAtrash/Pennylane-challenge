@@ -34,11 +34,11 @@ export default function Index({ recipes, pagination, search_ingredients = [] }: 
 
   return (
     <>
-      <Head title="Recipe Finder - Find recipes by ingredients" />
-      
+      <Head title="OmNom - Find recipes by ingredients" />
+
       <div className="bg-amber-50 mx-auto p-4">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Recipe Finder</h1>
+          <h1 className="text-3xl font-bold mb-6">OmNom - Find recipes by ingredients</h1>
 
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
