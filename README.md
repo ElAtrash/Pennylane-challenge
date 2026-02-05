@@ -1,4 +1,5 @@
 # OmNom - Find recipes by ingredients
+**Developer:** [Safiya El Atrash](https://github.com/ElAtrash)
 
 ## Project Overview
 
