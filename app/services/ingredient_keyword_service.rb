@@ -14,30 +14,36 @@ class IngredientKeywordService
   def self.extract_all
     Recipe.pluck(:ingredients)
           .flatten
-          .flat_map { |ingredient| extract_from(ingredient) }
+          .map { |ingredient| normalize_for_autocomplete(ingredient) }
+          .compact
+          .select { |ingredient| ingredient.split(/\s+/).length <= 2 }
           .uniq
           .sort
   end
 
-  # Extract keywords from a single ingredient string
-  def self.extract_from(ingredient_string)
-    return [] if ingredient_string.nil?
+  def self.normalize_for_autocomplete(ingredient_string)
+    return nil if ingredient_string.nil? || ingredient_string.blank?
 
-    ingredient_string
-      .downcase
-      .gsub(/\d+/, "")          # Remove numbers
-      .gsub(/[^\w\s-]/, "")     # Keep only words and dashes
-      .split(/\s+/)
-      .reject { |word| STOP_WORDS.include?(word) }
-      .select { |word| word.length > 2 }
+    words = ingredient_string
+              .downcase
+              .gsub(/[^\w\s]/, " ")
+              .split(/\s+/)
+              .reject(&:blank?)
+              .reject { |word| STOP_WORDS.include?(word) }
+              .reject { |word| word.match?(/\A\d+\z/) }  # Remove numbers
+              .reject { |word| word.length < 2 }
+
+    result = words.join(" ").strip
+    result.present? ? result : nil
   end
 
   # Search keywords with prefix matching
   def self.search(query, limit: 8)
     return [] if query.to_s.length < 2
 
-    all_keywords.select { |keyword| keyword.start_with?(query.downcase) }
-                .take(limit)
+    all_keywords.select do |ingredient|
+      ingredient.split(/\s+/).any? { |word| word.start_with?(query.downcase.strip) }
+    end.take(limit)
   end
 
   def self.all_keywords

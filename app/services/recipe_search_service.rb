@@ -30,7 +30,9 @@ class RecipeSearchService
     recipe.ingredients.select do |ingredient|
       ingredient_lower = ingredient.downcase
       keyword_groups.any? do |words|
-        words.all? { |word| ingredient_lower.include?(word) }
+        words.all? do |word|
+          ingredient_lower.include?(word) || ingredient_lower.include?(word.singularize)
+        end
       end
     end
   end

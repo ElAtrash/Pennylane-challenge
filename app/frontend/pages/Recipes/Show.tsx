@@ -82,9 +82,9 @@ export default function Show({ recipe, search_ingredients = [] }: RecipeShowProp
                 return (
                   <li
                     key={idx}
-                    className={`flex items-start gap-3 py-2 ${matched ? 'text-green-700' : 'text-gray-700'}`}
+                    className={`flex items-center gap-3 py-2 ${matched ? 'text-green-700' : 'text-gray-700'}`}
                   >
-                    <span className={`mt-1 w-2 h-2 rounded-full shrink-0 ${matched ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${matched ? 'bg-green-500' : 'bg-gray-300'}`} />
                     <span>{ingredient}</span>
                   </li>
                 )

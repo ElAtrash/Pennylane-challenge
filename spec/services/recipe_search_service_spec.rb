@@ -154,6 +154,11 @@ RSpec.describe RecipeSearchService do
       expect(service.matched_ingredients(recipe)).to eq([ "1 cup whole milk" ])
     end
 
+    it "returns ingredients matching the search keywords singular form" do
+      service = described_class.new("milks")
+      expect(service.matched_ingredients(recipe)).to eq([ "1 cup whole milk" ])
+    end
+
     it "returns multiple matched ingredients" do
       service = described_class.new(%w[milk eggs])
       expect(service.matched_ingredients(recipe)).to contain_exactly("1 cup whole milk", "2 eggs")

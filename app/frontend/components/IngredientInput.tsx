@@ -12,6 +12,7 @@ export default function IngredientInput({ ingredients, onChange }: IngredientInp
   const [error, setError] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<number | null>(null)
+  const [highlightedIndex, setHighlightedIndex] = useState(-1)
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -33,6 +34,7 @@ export default function IngredientInput({ ingredients, onChange }: IngredientInp
         )
         setSuggestions(filtered)
         setShowSuggestions(filtered.length > 0)
+        setHighlightedIndex(-1)
       } catch {
         setSuggestions([])
         setShowSuggestions(false)
@@ -58,6 +60,7 @@ export default function IngredientInput({ ingredients, onChange }: IngredientInp
     onChange([...ingredients, trimmed])
     setInputValue('')
     setShowSuggestions(false)
+    setHighlightedIndex(-1)
   }
 
   const removeIngredient = (index: number) => {
@@ -71,6 +74,23 @@ export default function IngredientInput({ ingredients, onChange }: IngredientInp
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (showSuggestions && suggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setHighlightedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev))
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setHighlightedIndex(prev => (prev > 0 ? prev - 1 : -1))
+      } else if (e.key === 'Enter' && highlightedIndex !== -1) {
+        e.preventDefault()
+        addIngredient(suggestions[highlightedIndex])
+        return
+      } else if (e.key === 'Escape') {
+        setShowSuggestions(false)
+        return
+      }
+    }
+
     if (e.key === 'Enter' && inputValue.trim()) {
       e.preventDefault()
       addIngredient(inputValue)
@@ -79,7 +99,7 @@ export default function IngredientInput({ ingredients, onChange }: IngredientInp
 
   const handleSuggestionClick = (suggestion: string) => {
     addIngredient(suggestion)
-    inputRef.current?.focus()
+    setTimeout(() => { inputRef.current?.focus() }, 0)
   }
 
   const errorClass = error ? 'animate-[shake_0.3s_ease-in-out]' : ''
@@ -136,11 +156,13 @@ export default function IngredientInput({ ingredients, onChange }: IngredientInp
 
       {showSuggestions && suggestions.length > 0 && (
         <ul className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-auto">
-          {suggestions.map((suggestion) => (
+          {suggestions.map((suggestion, index) => (
             <li
               key={suggestion}
-              className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+              className={`px-4 py-2 cursor-pointer ${index === highlightedIndex ? 'bg-amber-100' : 'hover:bg-gray-100'
+                }`}
               onMouseDown={() => handleSuggestionClick(suggestion)}
+              onMouseEnter={() => setHighlightedIndex(index)}
             >
               {suggestion}
             </li>

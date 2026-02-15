@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import IngredientInput from '../../components/IngredientInput'
 import { RecipeIndexProps } from '../../types/recipe'
 
@@ -7,18 +7,23 @@ export default function Index({ recipes, pagination, search_ingredients = [] }: 
   const isSearchMode = recipes.some(r => r.matched_ingredients.length > 0)
   const [ingredients, setIngredients] = useState<string[]>(search_ingredients)
 
-  const handleSearch = () => {
-    if (ingredients.length === 0) {
-      router.get('/', {}, { preserveState: true })
-    } else {
-      router.get('/', { ingredients }, { preserveState: true })
-    }
-  }
+  // Insta search with debounce
+  useEffect(() => {
+    if (JSON.stringify(ingredients) === JSON.stringify(search_ingredients)) return
 
-  const handleClearAndSearch = () => {
-    setIngredients([])
-    router.get('/', {}, { preserveState: true })
-  }
+    const timer = setTimeout(() => {
+      router.get('/',
+        ingredients.length > 0 ? { ingredients } : {},
+        {
+          preserveState: true,
+          replace: true,
+          only: ['recipes', 'pagination', 'search_ingredients']
+        }
+      )
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [ingredients])
 
   const goToPage = (page: number) => {
     const url = new URL(window.location.href)
@@ -48,24 +53,6 @@ export default function Index({ recipes, pagination, search_ingredients = [] }: 
               ingredients={ingredients}
               onChange={setIngredients}
             />
-          </div>
-
-          <div className="flex gap-2 mb-8">
-            <button
-              onClick={handleSearch}
-              disabled={ingredients.length === 0}
-              className="px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-            >
-              Search Recipes
-            </button>
-            {isSearchMode && (
-              <button
-                onClick={handleClearAndSearch}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                Show all recipes
-              </button>
-            )}
           </div>
         </div>
 
