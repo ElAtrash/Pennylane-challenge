@@ -6,6 +6,7 @@ export interface Recipe {
   ratings: number | null;
   prep_time: number | null;
   cook_time: number | null;
+  image: string | null;
   ingredients: string[];
   matched_ingredients: string[];
   match_count?: number;

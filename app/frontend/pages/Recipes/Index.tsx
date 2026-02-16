@@ -3,9 +3,17 @@ import { useEffect, useState } from 'react'
 import IngredientInput from '../../components/IngredientInput'
 import { RecipeIndexProps } from '../../types/recipe'
 
+const MATCHED_INGREDIENT_DISPLAY_LIMIT = 3
+
 export default function Index({ recipes, pagination, search_ingredients = [] }: RecipeIndexProps) {
   const isSearchMode = recipes.some(r => r.matched_ingredients.length > 0)
   const [ingredients, setIngredients] = useState<string[]>(search_ingredients)
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.style.display = 'none'
+    const placeholder = e.currentTarget.nextElementSibling as HTMLElement
+    placeholder?.classList.remove('hidden')
+  }
 
   // Insta search with debounce
   useEffect(() => {
@@ -68,38 +76,62 @@ export default function Index({ recipes, pagination, search_ingredients = [] }: 
               No recipes found. Try adding different ingredients.
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recipes.map((recipe) => {
-                const displayLimit = 3
-                const displayedMatches = recipe.matched_ingredients.slice(0, displayLimit)
-                const remainingCount = recipe.matched_ingredients.length - displayLimit
-
-                const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0)
-                const hasTime = recipe.prep_time !== null || recipe.cook_time !== null
-                const hasRating = recipe.ratings !== null
-                const showMetaRow = hasRating || hasTime
-
-                return (
+            <div className="grid grid-cols-3 gap-4">
+              {recipes.map((recipe) => (
                   <Link
                     key={recipe.id}
                     href={recipeUrl(recipe.id)}
-                    className="block p-4 border rounded-xl hover:shadow-md transition-shadow bg-white"
+                    className="block relative border border-gray-200 rounded-xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 bg-white overflow-hidden group"
                   >
-                    <h3 className="font-semibold">{recipe.title}</h3>
-                    {showMetaRow && (
-                      <p className="text-sm text-gray-500">
-                        {hasRating && <span>⭐ {recipe.ratings!.toFixed(1)}</span>}
-                        {hasRating && hasTime && <span> · </span>}
-                        {hasTime && <span>{totalTime} min</span>}
-                      </p>
+                    {recipe.image ? (
+                      <img
+                        src={recipe.image}
+                        alt={recipe.title}
+                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+                        onError={handleImageError}
+                      />
+                    ) : null}
+
+                    {/* Placeholder */}
+                    <div className={`w-full h-48 bg-linear-to-br from-amber-100 to-amber-200 flex items-center justify-center ${recipe.image ? 'hidden' : ''}`}>
+                      <svg className="w-16 h-16 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+
+                    {/* Match percentage badge */}
+                    {recipe.matched_ingredients.length > 0 && recipe.match_count && recipe.ingredient_count && (
+                      <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                        {Math.round((recipe.match_count / recipe.ingredient_count) * 100)}% match
+                      </div>
                     )}
-                    {recipe.category && (
-                      <p className="text-sm text-gray-400">{recipe.category}</p>
-                    )}
-                    {recipe.matched_ingredients.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-100">
-                        <div className="flex flex-wrap gap-1 mb-1">
-                          {displayedMatches.map((ingredient, idx) => (
+
+                    <div className="p-4">
+                      <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2">{recipe.title}</h3>
+                      {(recipe.ratings || recipe.prep_time || recipe.cook_time) && (
+                        <p className="text-sm text-gray-500 flex items-center gap-2">
+                          {recipe.ratings && (
+                            <>
+                              <span className="inline-flex items-center gap-1 text-amber-600 font-semibold">
+                                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                                </svg>
+                                {recipe.ratings.toFixed(1)}
+                              </span>
+                              {(recipe.prep_time || recipe.cook_time) && <span>·</span>}
+                            </>
+                          )}
+                          {(recipe.prep_time || recipe.cook_time) && (
+                            <span>{(recipe.prep_time || 0) + (recipe.cook_time || 0)} min</span>
+                          )}
+                        </p>
+                      )}
+                      {recipe.category && (
+                        <p className="text-sm text-gray-400">{recipe.category}</p>
+                      )}
+                      {recipe.matched_ingredients.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-1">
+                          {recipe.matched_ingredients.slice(0, MATCHED_INGREDIENT_DISPLAY_LIMIT).map((ingredient, idx) => (
                             <span
                               key={idx}
                               className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full"
@@ -107,20 +139,16 @@ export default function Index({ recipes, pagination, search_ingredients = [] }: 
                               {ingredient}
                             </span>
                           ))}
-                          {remainingCount > 0 && (
+                          {recipe.matched_ingredients.length > MATCHED_INGREDIENT_DISPLAY_LIMIT && (
                             <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
-                              +{remainingCount} more
+                              +{recipe.matched_ingredients.length - MATCHED_INGREDIENT_DISPLAY_LIMIT} more
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500">
-                          You have {recipe.match_count}/{recipe.ingredient_count} ingredients
-                        </p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </Link>
-                )
-              })}
+              ))}
             </div>
           )}
 

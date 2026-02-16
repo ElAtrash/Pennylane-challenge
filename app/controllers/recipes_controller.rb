@@ -44,6 +44,7 @@ class RecipesController < ApplicationController
       ratings: recipe.ratings&.to_f,
       prep_time: recipe.prep_time,
       cook_time: recipe.cook_time,
+      image: recipe.image,
       ingredients: recipe.ingredients,
       matched_ingredients: search_service.matched_ingredients(recipe),
       match_count: recipe.try(:match_count),

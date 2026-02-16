@@ -43,10 +43,23 @@ class RecipeImporter
       ratings: data["ratings"],
       category: data["category"],
       author: data["author"],
+      image: fix_image_url(data["image"]),
       ingredients: normalize_ingredients(data["ingredients"]),
       created_at: Time.current,
       updated_at: Time.current
     }
+  end
+
+  def fix_image_url(url)
+    return nil if url.blank?
+
+    if url.include?("imagesvc.meredithcorp.io")
+      # Add dimensions and crop mode
+      separator = url.include?("?") ? "&" : "?"
+      "#{url}#{separator}w=400&h=300&q=80&c=1"
+    else
+      url
+    end
   end
 
   def refresh_ingredient_keywords
