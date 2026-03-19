@@ -12,6 +12,7 @@ export default function IngredientInput({ ingredients, onChange }: IngredientInp
   const [error, setError] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<number | null>(null)
+  const suggestionRefs = useRef<(HTMLLIElement | null)[]>([])
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
 
   useEffect(() => {
@@ -47,6 +48,19 @@ export default function IngredientInput({ ingredients, onChange }: IngredientInp
       }
     }
   }, [inputValue, ingredients])
+
+  useEffect(() => {
+    suggestionRefs.current = suggestionRefs.current.slice(0, suggestions.length)
+  }, [suggestions])
+
+  useEffect(() => {
+    if (highlightedIndex >= 0 && suggestionRefs.current[highlightedIndex]) {
+      suggestionRefs.current[highlightedIndex]?.scrollIntoView({
+        block: 'nearest',
+        behavior: 'smooth'
+      })
+    }
+  }, [highlightedIndex])
 
   const addIngredient = (value: string) => {
     const trimmed = value.trim().toLowerCase()
@@ -159,10 +173,10 @@ export default function IngredientInput({ ingredients, onChange }: IngredientInp
           {suggestions.map((suggestion, index) => (
             <li
               key={suggestion}
+              ref={(el) => { suggestionRefs.current[index] = el }}
               className={`px-4 py-2 cursor-pointer ${index === highlightedIndex ? 'bg-amber-100' : 'hover:bg-gray-100'
                 }`}
               onMouseDown={() => handleSuggestionClick(suggestion)}
-              onMouseEnter={() => setHighlightedIndex(index)}
             >
               {suggestion}
             </li>

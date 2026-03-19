@@ -45,6 +45,12 @@ export default function Index({ recipes, pagination, search_ingredients = [] }: 
     return `/recipes/${id}?${params}`
   }
 
+  const getMatchColor = (percentage: number) => {
+    if (percentage >= 71) return 'bg-green-500'
+    if (percentage >= 41) return 'bg-amber-500'
+    return 'bg-orange-500'
+  }
+
   return (
     <>
       <Head title="OmNom - Find recipes by ingredients" />
@@ -100,11 +106,14 @@ export default function Index({ recipes, pagination, search_ingredients = [] }: 
                     </div>
 
                     {/* Match percentage badge */}
-                    {recipe.matched_ingredients.length > 0 && recipe.match_count && recipe.ingredient_count && (
-                      <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                        {Math.round((recipe.match_count / recipe.ingredient_count) * 100)}% match
+                  {recipe.matched_ingredients.length > 0 && recipe.match_count && recipe.ingredient_count && (() => {
+                    const matchPercentage = Math.round((recipe.match_count / recipe.ingredient_count) * 100)
+                    return (
+                      <div className={`absolute top-3 right-3 ${getMatchColor(matchPercentage)} text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg`}>
+                        {matchPercentage}% match
                       </div>
-                    )}
+                    )
+                  })()}
 
                     <div className="p-4">
                       <h3 className="text-lg font-bold text-gray-900 line-clamp-2 mb-2">{recipe.title}</h3>
