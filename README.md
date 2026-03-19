@@ -7,10 +7,6 @@ Rails 8 web application that helps users find recipes based on ingredients they 
 
 **Core Problem**: User enters ingredients -> system finds and ranks recipes they can make
 
-## Live Demo
-
-[Try it live on Fly.io](https://omnom.fly.dev)
-
 ## Tech Stack
 
 - **Backend**: Ruby on Rails 8, PostgreSQL
